@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grabit Settings</title>
+<style>
+  :root {
+    --card: rgba(255,255,255,.78); --text: #2a2230; --muted: #6d6370; --line: #f0e2dc;
+    --accent: #f2704f; --accent-grad: linear-gradient(135deg, #ff9a4f 0%, #f56f5b 55%, #e5809f 100%);
+    --chip: #fbefe9; --seg-on: #fff;
+    --mesh:
+      radial-gradient(55% 45% at 100% 0%, rgba(255,122,102,.38) 0%, transparent 70%),
+      radial-gradient(50% 40% at 0% 8%, rgba(255,171,85,.38) 0%, transparent 70%),
+      radial-gradient(55% 45% at 0% 100%, rgba(143,171,212,.40) 0%, transparent 70%),
+      radial-gradient(45% 40% at 100% 100%, rgba(242,166,186,.40) 0%, transparent 70%),
+      #fbf7f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --card: rgba(37,29,34,.82); --text: #f6eeea; --muted: #b9aaa6; --line: #3a2d2f;
+      --chip: #33272a; --seg-on: rgba(255,255,255,.12);
+      --mesh:
+        radial-gradient(55% 45% at 100% 0%, rgba(255,122,102,.20) 0%, transparent 70%),
+        radial-gradient(50% 40% at 0% 8%, rgba(255,171,85,.16) 0%, transparent 70%),
+        radial-gradient(55% 45% at 0% 100%, rgba(143,171,212,.20) 0%, transparent 70%),
+        radial-gradient(45% 40% at 100% 100%, rgba(242,166,186,.16) 0%, transparent 70%),
+        #1a1519;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { min-height: 100%; background: var(--mesh); background-attachment: fixed; }
+  body { margin: 0; color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; min-height: 100vh; }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 16px 64px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  header img { width: 36px; height: 36px; }
+  h1 { font-size: 20px; margin: 0; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 28px rgba(160,70,50,.08); margin-bottom: 16px; }
+  .row { display: flex; align-items: center; gap: 16px; padding: 16px 18px; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row .text { flex: 1; min-width: 0; }
+  .row .title { font-weight: 600; }
+  .row .desc { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 4px 8px; font-weight: 600; }
+
+  /* switch */
+  .switch { position: relative; width: 42px; height: 24px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch span { position: absolute; inset: 0; background: rgba(109,99,112,.35); border-radius: 999px; transition: background .15s; cursor: pointer; }
+  .switch span::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked + span { background: var(--accent-grad); }
+  .switch input:checked + span::after { transform: translateX(18px); }
+  .switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* segmented */
+  .seg { display: inline-flex; background: var(--chip); border-radius: 9px; padding: 3px; flex: none; }
+  .seg label { cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; }
+  .seg span { display: block; padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 12.5px; color: var(--muted); }
+  .seg input:checked + span { background: var(--seg-on); color: var(--text); box-shadow: 0 1px 4px rgba(160,70,50,.18); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); }
+
+  /* wallpapers */
+  .walls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 18px 18px; }
+  .wall { position: relative; cursor: pointer; border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 10; border: 2px solid transparent; background-size: cover; background-position: center; }
+  .wall input { position: absolute; opacity: 0; }
+  .wall img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wall .name { position: absolute; left: 8px; bottom: 6px; color: #fff; font-size: 11.5px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+  .wall:has(input:checked) { border-color: #fff; box-shadow: 0 0 0 3px var(--accent), 0 8px 20px rgba(242,112,79,.3); }
+  .wall:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .walls.off { opacity: .45; pointer-events: none; }
+
+  button { font: 650 12.5px system-ui, sans-serif; border: 0; background: var(--accent-grad); color: #fff; padding: 9px 14px; border-radius: 10px; cursor: pointer; box-shadow: 0 6px 16px rgba(242,112,79,.3); }
+  button:hover { filter: brightness(1.06); }
+  kbd { font: 600 12px system-ui, sans-serif; background: var(--chip); border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px; }
+  .saved { position: fixed; z-index: 2; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px); opacity: 0; background: var(--accent-grad); color: #fff; box-shadow: 0 8px 24px rgba(242,112,79,.35); padding: 8px 14px; border-radius: 999px; font-size: 13px; transition: .2s; pointer-events: none; }
+  .saved.show { opacity: 1; transform: translateX(-50%); }
+  @media (max-width: 520px) {
+    .row { flex-wrap: wrap; }
+    .walls { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icons/icon48.png" alt="">
+    <div>
+      <h1>Grabit</h1>
+      <p>Settings are saved automatically and stay on this computer.</p>
+    </div>
+  </header>
+
+  <h2>After capture</h2>
+  <div class="card">
+    <div class="row">
+      <div class="text">
+        <div class="title">When a screenshot is taken</div>
+        <div class="desc">Copy only puts it on your clipboard and briefly outlines the area. Your last 3 screenshots are always in the Library (right-click the toolbar icon) to edit later. Editor opens the drawing window right away; Quick preview shows a small card.</div>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="After capture">
+        <label><input type="radio" name="afterCapture" value="copy"><span>Copy only</span></label>
+        <label><input type="radio" name="afterCapture" value="editor"><span>Editor</span></label>
+        <label><input type="radio" name="afterCapture" value="toast"><span>Preview</span></label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="text">
+        <div class="title">Copy to clipboard automatically</div>
+        <div class="desc">The screenshot is ready to paste the moment you click.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="autoCopy"><span></span></label>
+    </div>
+  </div>
+
+  <h2>Look</h2>
+  <div class="card">
+    <div class="row">
+      <div class="text">
+        <div class="title">Mac window mockup</div>
+        <div class="desc">Frame screenshots in a macOS-style window on a wallpaper. You can still switch to plain in the editor.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="mockup"><span></span></label>
+    </div>
+    <div class="row" style="padding-bottom:10px">
+      <div class="text"><div class="title">Default wallpaper</div></div>
+    </div>
+    <div class="walls" id="walls"></div>
+  </div>
+
+  <h2>Keyboard</h2>
+  <div class="card">
+    <div class="row">
+      <div class="text">
+        <div class="title">Start capture</div>
+        <div class="desc">Current shortcut: <kbd id="shortcut">Alt+Shift+S</kbd></div>
+      </div>
+      <button id="editShortcut">Change shortcut</button>
+    </div>
+    <div class="row">
+      <div class="text">
+        <div class="title">In the editor</div>
+        <div class="desc"><kbd>P</kbd> pen · <kbd>H</kbd> highlighter · <kbd>A</kbd> arrow · <kbd>R</kbd> box · <kbd>B</kbd> blur · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+C</kbd> copy · <kbd>Ctrl+S</kbd> save · <kbd>Esc</kbd> done</div>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="saved" id="saved">Saved</div>
+<script src="options.js"></script>
+</body>
+</html>

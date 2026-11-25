@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Mockup preview</title>
+<style>
+  body { margin: 0; padding: 16px; background: #888; font: 13px system-ui, sans-serif; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  img { width: 100%; display: block; border-radius: 4px; }
+</style>
+<script src="../mockup.js"></script>
+</head>
+<body>
+<div class="grid" id="grid"></div>
+<script>
+  // Fake "screenshots" at 2x DPR: a dark GitHub-like list and a light card.
+  function fakeShot(dark) {
+    const u = 2, w = 520 * u, h = 170 * u;
+    const c = new OffscreenCanvas(w, h), g = c.getContext('2d');
+    g.fillStyle = dark ? '#0d1117' : '#ffffff'; g.fillRect(0, 0, w, h);
+    g.fillStyle = dark ? '#21262d' : '#e5e7eb'; g.fillRect(0, 84 * u, w, 1 * u);
+    const txt = dark ? '#e6edf3' : '#111827', meta = dark ? '#8d96a0' : '#6b7280';
+    [['01_contact_page', 'someone/1st-project#1 · Updated on Jun 30', 18], ['Userid route', 'someone/Tester#3 · Updated on Jun 26', 102]].forEach(([t, m, y]) => {
+      g.fillStyle = dark ? '#3fb950' : '#16a34a'; g.font = `${16 * u}px system-ui`; g.fillText('⇅', 18 * u, (y + 20) * u);
+      g.fillStyle = txt; g.font = `600 ${18 * u}px system-ui`; g.fillText(t, 48 * u, (y + 20) * u);
+      g.fillStyle = meta; g.font = `${13 * u}px system-ui`; g.fillText(m, 48 * u, (y + 44) * u);
+    });
+    return c.transferToImageBitmap();
+  }
+  (async () => {
+    const shots = [fakeShot(true), fakeShot(false)];
+    const grid = document.getElementById('grid');
+    const only = new URLSearchParams(location.search).get('wp');
+    for (let wp = 0; wp < SnapMockup.WALLPAPERS.length; wp++) {
+      if (only !== null && +only !== wp) continue;
+      const src = SnapMockup.WALLPAPERS[wp].image;
+      const wpImg = src ? await createImageBitmap(await (await fetch('../' + src)).blob()) : null;
+      for (const shot of shots) {
+        const out = SnapMockup.render(shot, { wallpaper: wp }, 2, wpImg);
+        const blob = await out.convertToBlob({ type: 'image/png' });
+        const img = new Image(); img.src = URL.createObjectURL(blob);
+        grid.appendChild(img);
+      }
+    }
+    document.title = 'done';
+  })();
+</script>
+</body>
+</html>

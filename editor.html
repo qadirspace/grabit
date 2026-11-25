@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grabit Editor</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    background:
+      radial-gradient(55% 45% at 100% 0%, rgba(255,122,102,.38) 0%, transparent 70%),
+      radial-gradient(50% 40% at 0% 8%, rgba(255,171,85,.38) 0%, transparent 70%),
+      radial-gradient(55% 45% at 0% 100%, rgba(143,171,212,.40) 0%, transparent 70%),
+      radial-gradient(45% 40% at 100% 100%, rgba(242,166,186,.40) 0%, transparent 70%),
+      #fbf7f5;
+    font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; color: #2a2230;
+  }
+  #msg { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; }
+</style>
+</head>
+<body>
+<div id="msg">Opening screenshot…</div>
+<script src="editor.js"></script>
+<script src="editor-page.js"></script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Grabit icon</title>
+<style>
+  body { margin: 0; background: #e3ecf5; font: 14px/1.4 system-ui, -apple-system, sans-serif; color: #2d2342; }
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .c { background: rgba(255,255,255,.5); border-radius: 18px; padding: 20px; display: grid; gap: 14px; justify-items: center; }
+  .c h2 { margin: 0; font-size: 15px; }
+  .c p { margin: 0; color: #6f6386; font-size: 13px; text-align: center; max-width: 300px; }
+  .big { width: 240px; height: 240px; }
+  .sizes { display: flex; gap: 14px; align-items: center; }
+  .bar { display: flex; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 8px; }
+  .bar.light { background: #f1f3f4; } .bar.dark { background: #35363a; }
+  .bar span { width: 16px; height: 16px; border-radius: 50%; background: #9aa0a6; opacity: .5; }
+</style>
+</head>
+<body>
+<main id="main"></main>
+<script>
+// Grabit's icon: a glassy hand-drawn lasso on a warm gradient tile.
+// Everything is painted at 1024 px and scaled down. To re-export the toolbar icons,
+// open this page and call __export("lasso", 16 | 32 | 48 | 128) for each PNG.
+const S = 1024, C = S / 2;
+
+const canvas = (w = S, h = S) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+
+// ---------- the gradient tile ----------
+function tileShape(g) { g.beginPath(); g.roundRect(32, 32, 960, 960, 236); }
+
+function paintTile() {
+  const c = canvas(), g = c.getContext("2d");
+  const lin = g.createLinearGradient(0, 0, 0, S);
+  [[0, "#ff875e"], [.3, "#ffa157"], [.52, "#ee8e7a"], [.72, "#8fabd4"], [.88, "#cfd1dd"], [1, "#f2a6ba"]]
+    .forEach(([o, col]) => lin.addColorStop(o, col));
+  g.fillStyle = lin; g.fillRect(0, 0, S, S);
+  g.filter = "blur(90px)";
+  for (const [x, y, r, col] of [
+    [790, 110, 280, "#ff7466"], [260, 330, 250, "#ffae55"], [780, 470, 190, "#ffa058"],
+    [500, 610, 150, "#b996bd"], [280, 790, 200, "#7ea3d3"], [580, 900, 200, "#d9d8e2"],
+    [930, 900, 150, "#f49cb7"], [40, 950, 130, "#ee8d76"],
+  ]) { g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+  g.filter = "none";
+  // clip to the rounded square, with a faint inner top light
+  const out = canvas(), o = out.getContext("2d");
+  tileShape(o); o.save(); o.clip(); o.drawImage(c, 0, 0);
+  const hi = o.createLinearGradient(0, 32, 0, 400);
+  hi.addColorStop(0, "rgba(255,255,255,.22)"); hi.addColorStop(1, "rgba(255,255,255,0)");
+  o.fillStyle = hi; o.fillRect(0, 0, S, 400);
+  o.restore();
+  return out;
+}
+
+// ---------- glass material for the white mark ----------
+function tint(mask, fill) {
+  const c = canvas(), g = c.getContext("2d");
+  g.drawImage(mask, 0, 0); g.globalCompositeOperation = "source-in";
+  g.fillStyle = fill; g.fillRect(0, 0, S, S);
+  return c;
+}
+function shifted(mask, dx, dy) { const c = canvas(); c.getContext("2d").drawImage(mask, dx, dy); return c; }
+
+function glass(ctx, mask, o = {}) {
+  const top = o.top ?? 1, bottom = o.bottom ?? .7;
+  // 1. soft colored shadow under the mark
+  ctx.save(); ctx.filter = "blur(22px)"; ctx.globalAlpha = .32;
+  ctx.drawImage(tint(mask, "#a2442f"), 0, 20); ctx.restore();
+  // 2. wide white glow
+  ctx.save(); ctx.filter = "blur(36px)"; ctx.globalAlpha = o.glow ?? .5;
+  ctx.drawImage(tint(mask, "#fff"), 0, 0); ctx.restore();
+  // 3. body: white, a little see-through toward the bottom right
+  const grad = ctx.createLinearGradient(200, 160, 820, 880);
+  grad.addColorStop(0, `rgba(255,255,255,${top})`); grad.addColorStop(1, `rgba(255,255,255,${bottom})`);
+  ctx.drawImage(tint(mask, grad), 0, 0);
+  // 4. inner shade on the lower edge, gives the stroke thickness
+  const inner = canvas(), ig = inner.getContext("2d");
+  ig.fillStyle = "#b98fb6"; ig.fillRect(0, 0, S, S);
+  ig.globalCompositeOperation = "destination-out"; ig.drawImage(shifted(mask, 0, -10), 0, 0);
+  const soft = canvas(), sg = soft.getContext("2d");
+  sg.filter = "blur(8px)"; sg.drawImage(inner, 0, 0); sg.filter = "none";
+  sg.globalCompositeOperation = "destination-in"; sg.drawImage(mask, 0, 0);
+  ctx.save(); ctx.globalAlpha = .35; ctx.drawImage(soft, 0, 0); ctx.restore();
+  // 5. bright rim along the top edge
+  const rim = canvas(), rg = rim.getContext("2d");
+  rg.drawImage(mask, 0, 0); rg.globalCompositeOperation = "destination-out"; rg.drawImage(shifted(mask, 0, 7), 0, 0);
+  ctx.save(); ctx.filter = "blur(1.5px)"; ctx.globalAlpha = .9; ctx.drawImage(tint(rim, "#fff"), 0, 0); ctx.restore();
+}
+
+function mask(draw) { const c = canvas(), g = c.getContext("2d"); g.fillStyle = g.strokeStyle = "#fff"; draw(g); return c; }
+
+function star(g, x, y, r, pinch = .2) {
+  // four-point glint with soft concave sides
+  g.beginPath(); g.moveTo(x, y - r);
+  const q = r * pinch;
+  g.quadraticCurveTo(x + q, y - q, x + r, y); g.quadraticCurveTo(x + q, y + q, x, y + r);
+  g.quadraticCurveTo(x - q, y + q, x - r, y); g.quadraticCurveTo(x - q, y - q, x, y - r);
+  g.fill();
+}
+
+// ---------- concepts ----------
+const CONCEPTS = {
+  // One lasso stroke around an area that ends in a glint: capture in a single gesture.
+  lasso: {
+    name: "Lasso",
+    note: "One brush-like stroke loops around an area and ends in a sparkle: pick anything, it's captured.",
+    paint(ctx) {
+      const pts = [];
+      const L = 512 - 255, R = 512 + 255, T = 512 - 255, B = 512 + 255, r = 120;
+      const line = (x0, y0, x1, y1) => { for (let i = 0; i <= 40; i++) pts.push([x0 + (x1 - x0) * i / 40, y0 + (y1 - y0) * i / 40]); };
+      const arc = (cx, cy, a0, a1) => { for (let i = 0; i <= 30; i++) { const a = a0 + (a1 - a0) * i / 30; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } };
+      const d = Math.PI / 180;
+      line(R - r - 10, T, L + r, T); arc(L + r, T + r, -90 * d, -180 * d);
+      line(L, T + r, L, B - r); arc(L + r, B - r, 180 * d, 90 * d);
+      line(L + r, B, R - r, B); arc(R - r, B - r, 90 * d, 0);
+      line(R, B - r, R, T + r);
+      const m = mask((g) => {
+        const n = pts.length;
+        pts.forEach(([x, y], i) => {
+          const t = i / (n - 1);
+          // brush pressure: lands softly, full through the loop, lifts into the sparkle
+          const w = 12 + 40 * Math.pow(Math.sin(Math.PI * (0.04 + 0.92 * t)), .8);
+          g.beginPath(); g.arc(x, y, w, 0, Math.PI * 2); g.fill();
+        });
+      });
+      glass(ctx, m);
+      glass(ctx, mask((g) => star(g, R - 40, T + 40, 132, .14)), { glow: 1 });
+    },
+  },
+};
+
+function render(concept) {
+  const tile = paintTile();
+  const out = canvas(), ctx = out.getContext("2d");
+  ctx.drawImage(tile, 0, 0);
+  ctx.save(); tileShape(ctx); ctx.clip();
+  concept.paint(ctx, tile);
+  ctx.restore();
+  // a soft shadow under the whole tile is left to the page; the PNG itself stays clean
+  return out;
+}
+
+// High-quality downscale: halve repeatedly, then one final step.
+function scaled(src, px) {
+  let cur = src;
+  while (cur.width / 2 >= px) {
+    const n = canvas(cur.width / 2, cur.height / 2), g = n.getContext("2d");
+    g.imageSmoothingQuality = "high"; g.drawImage(cur, 0, 0, n.width, n.height); cur = n;
+  }
+  const n = canvas(px, px), g = n.getContext("2d");
+  g.imageSmoothingQuality = "high"; g.drawImage(cur, 0, 0, px, px);
+  return n;
+}
+
+function img(src, px, css = px) {
+  const dpr = devicePixelRatio || 1;
+  const c = scaled(src, Math.round(px * dpr));
+  c.style.width = c.style.height = css + "px";
+  return c;
+}
+
+window.__icons = {};
+const main = document.getElementById("main");
+for (const key of ["lasso"]) {
+  const concept = CONCEPTS[key];
+  const full = render(concept);
+  window.__icons[key] = full;
+  const sec = document.createElement("section");
+  sec.className = "c";
+  sec.innerHTML = `<h2>${concept.name}</h2>`;
+  const big = img(full, 240); big.className = "big";
+  big.style.filter = "drop-shadow(0 18px 30px rgba(255,120,80,.3))";
+  sec.append(big);
+  const sizes = document.createElement("div"); sizes.className = "sizes";
+  sizes.append(img(full, 48), img(full, 32));
+  sec.append(sizes);
+  for (const cls of ["light", "dark"]) {
+    const bar = document.createElement("div"); bar.className = "bar " + cls;
+    bar.innerHTML = "<span></span><span></span>";
+    bar.append(img(full, 16));
+    bar.insertAdjacentHTML("beforeend", "<span></span>");
+    sec.append(bar);
+  }
+  sec.insertAdjacentHTML("beforeend", `<p>${concept.note}</p>`);
+  main.append(sec);
+}
+
+// For exporting: PNG data URL of a concept at a given size (1x).
+window.__export = (key, px) => scaled(window.__icons[key], px).toDataURL("image/png");
+</script>
+</body>
+</html>

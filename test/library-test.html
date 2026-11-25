@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Library test</title>
+<base href="../">
+</head>
+<body>
+<script>
+  // Stand-in for the extension APIs, with three fake history entries.
+  (function () {
+    const mk = (c1, c2) => {
+      const c = document.createElement('canvas'); c.width = 360; c.height = 220;
+      const g = c.getContext('2d'); const gr = g.createLinearGradient(0, 0, 360, 220);
+      gr.addColorStop(0, c1); gr.addColorStop(1, c2); g.fillStyle = gr; g.fillRect(0, 0, 360, 220);
+      g.fillStyle = 'rgba(255,255,255,.85)'; for (let y = 30; y < 200; y += 36) g.fillRect(24, y, 300, 18);
+      return c.toDataURL('image/jpeg', .8);
+    };
+    const now = Date.now();
+    const history = [
+      { id: 'a', time: now - 40000, w: 1030, h: 150, u: 2, title: 'Pull requests · GitHub', url: 'https://github.com/dashboard', thumb: mk('#0d1117', '#30363d') },
+      { id: 'b', time: now - 8 * 60000, w: 660, h: 420, u: 2, title: 'Pricing — Example', url: 'https://www.example.com/pricing', thumb: mk('#f2dcc6', '#a978ca') },
+      { id: 'c', time: now - 3 * 3600000, w: 1600, h: 900, u: 2, title: '', url: 'https://news.example.org/story', thumb: mk('#cac1e8', '#edb1c3') },
+    ];
+    window.__empty = location.search.includes('empty');
+    window.chrome = {
+      runtime: { sendMessage: async (m) => (m.type === 'snap:historyList' ? { ok: true, history: window.__empty ? [] : history } : { ok: true }), openOptionsPage() {} },
+      storage: {
+        local: {
+          get: async () => ({ history: window.__empty ? [] : history }),
+          set: async (o) => { if (o.history) { history.splice(0, history.length, ...o.history); window.__onChanged?.({ history: {} }, 'local'); } },
+          remove: async () => {},
+        },
+        onChanged: { addListener: (f) => { window.__onChanged = f; } },
+      },
+      commands: { getAll: async () => [{ name: 'start-capture', shortcut: 'Alt+Shift+S' }] },
+    };
+  })();
+  // pull in the real Library markup + styles, then its script
+  fetch('library.html').then((r) => r.text()).then((html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.head.querySelectorAll('style').forEach((s) => document.head.appendChild(s));
+    [...doc.body.children].forEach((n) => { if (n.tagName !== 'SCRIPT') document.body.appendChild(n); });
+    const s = document.createElement('script'); s.src = 'library.js'; document.body.appendChild(s);
+  });
+</script>
+</body>
+</html>

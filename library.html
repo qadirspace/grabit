@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grabit Library</title>
+<style>
+  :root {
+    --bg: #fbf7f5; --text: #2a2230; --muted: #6d6370; --card: #fff; --line: #f0e2dc;
+    --accent: #f2704f; --accent-grad: linear-gradient(135deg, #ff9a4f 0%, #f56f5b 55%, #e5809f 100%); --brand: linear-gradient(120deg, #ff9a4f 0%, #ff7a66 40%, #ea86a6 72%, #8fabd4 100%);
+    --btn: #fbefe9; --btn-hover: #f7e2d8;
+    --mesh:
+      radial-gradient(55% 45% at 100% 0%, rgba(255,122,102,.38) 0%, transparent 70%),
+      radial-gradient(50% 40% at 0% 8%, rgba(255,171,85,.38) 0%, transparent 70%),
+      radial-gradient(55% 45% at 0% 100%, rgba(143,171,212,.40) 0%, transparent 70%),
+      radial-gradient(45% 40% at 100% 100%, rgba(242,166,186,.40) 0%, transparent 70%),
+      #fbf7f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1519; --text: #f6eeea; --muted: #b9aaa6; --card: #251d22; --line: #3a2d2f;
+      --btn: #33272a; --btn-hover: #403134;
+      --mesh:
+        radial-gradient(55% 45% at 100% 0%, rgba(255,122,102,.20) 0%, transparent 70%),
+        radial-gradient(50% 40% at 0% 8%, rgba(255,171,85,.16) 0%, transparent 70%),
+        radial-gradient(55% 45% at 0% 100%, rgba(143,171,212,.20) 0%, transparent 70%),
+        radial-gradient(45% 40% at 100% 100%, rgba(242,166,186,.16) 0%, transparent 70%),
+        #1a1519;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--mesh); background-attachment: fixed; min-height: 100%; }
+  body { margin: 0; color: var(--text); }
+  body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  header img { width: 32px; height: 32px; }
+  h1 { font-size: 20px; margin: 0; flex: 1; }
+  header img { border-radius: 8px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  kbd { font: 600 12px system-ui, sans-serif; background: var(--btn); border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; }
+  button { all: unset; cursor: pointer; font: 650 12.5px system-ui, sans-serif; padding: 7px 12px; border-radius: 8px; background: var(--btn); color: var(--text); text-align: center; }
+  button:hover { background: var(--btn-hover); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.primary { background: var(--accent-grad); color: #fff; }
+  button.primary:hover { filter: brightness(1.05); }
+  button.ok { background: var(--accent-grad); color: #fff; }
+  button.danger:hover { color: #c2362b; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 6px 20px rgba(160,70,50,.08); }
+  .item:hover { border-color: transparent; background: linear-gradient(var(--card), var(--card)) padding-box, var(--brand) border-box; }
+  .thumb { all: unset; cursor: pointer; display: block; aspect-ratio: 3 / 2; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .meta { padding: 10px 12px 0; min-width: 0; }
+  .title { font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .actions { display: flex; gap: 6px; padding: 10px 12px 12px; }
+  .actions .spacer { flex: 1; }
+  .empty { color: var(--muted); text-align: center; padding: 48px 16px; background: var(--card); border: 1px dashed var(--line); border-radius: 12px; }
+  .note { color: #c2362b; font-size: 13px; min-height: 1.4em; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icons/icon48.png" alt="">
+    <h1>Library</h1>
+    <button id="settings">Settings</button>
+  </header>
+  <p class="lead">Your last 3 screenshots. To capture, click the Grabit icon in the toolbar or press <kbd id="shortcut">Alt+Shift+S</kbd>.</p>
+  <div class="note" id="note"></div>
+  <div class="grid" id="list"></div>
+</main>
+<script src="library.js"></script>
+</body>
+</html>

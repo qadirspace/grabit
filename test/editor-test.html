@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Editor window test</title>
+<base href="../">
+</head>
+<body>
+<script>
+  // Stand-in for the extension APIs: "history" returns one generated screenshot.
+  (function () {
+    const c = document.createElement('canvas'); c.width = 900; c.height = 520;
+    const g = c.getContext('2d'); g.fillStyle = '#0d1117'; g.fillRect(0, 0, 900, 520);
+    for (let y = 30, i = 0; y < 500; y += 60, i++) { g.fillStyle = i % 2 ? '#161b22' : '#11161d'; g.fillRect(20, y, 860, 48); g.fillStyle = '#e6edf3'; g.font = '600 18px system-ui'; g.fillText('Pull request ' + (i + 1) + ' — contact page', 40, y + 30); }
+    const b64 = c.toDataURL('image/png').split(',')[1];
+    window.chrome = {
+      runtime: {
+        sendMessage: async (m) => {
+          if (m.type === 'snap:loadHistory' || m.type === 'snap:render')
+            return { ok: true, base64: b64, width: 900, height: 520, contentX: 0, contentY: 0, plainW: 900, plainH: 520, u: 1, plainBase64: b64, entry: { title: 'Pull requests · GitHub' } };
+          return { ok: true };
+        },
+      },
+      storage: { local: { get: async () => ({}) } },
+    };
+  })();
+  // load the real editor page markup and scripts (in order)
+  fetch('editor.html').then((r) => r.text()).then((html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.head.querySelectorAll('style').forEach((s) => document.head.appendChild(s));
+    [...doc.body.children].forEach((n) => { if (n.tagName !== 'SCRIPT') document.body.appendChild(n); });
+    const load = (srcs) => { if (!srcs.length) return; const s = document.createElement('script'); s.src = srcs[0]; s.onload = () => load(srcs.slice(1)); document.body.appendChild(s); };
+    load(['editor.js', 'editor-page.js']);
+  });
+</script>
+</body>
+</html>
